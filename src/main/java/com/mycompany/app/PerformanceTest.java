@@ -50,6 +50,14 @@ public class PerformanceTest {
      * RPS
      */
 
+    /** e.g. play with
+     * 1000  ( 250 x 4)
+     * 5000 ( 1250 x 4)
+     * 20000 (5000 x 4)
+     * 30000 (7500 x 4)
+     * 40000 (10000 x 4)
+     */
+
     private static final int RPS_LOADER = 250;
     public static final int RPS_PROBE = 2;
 
@@ -71,13 +79,6 @@ public class PerformanceTest {
      */
     private static Mode mode = Mode.DEPLOY_JAVA;
 
-    /** e.g. play with
-     * 1000  ( 250 x 4)
-     * 5000 ( 1250 x 4)
-     * 20000 (5000 x 4)
-     * 30000 (7500 x 4)
-     * 40000 (10000 x 4)
-     */
 
 
     private static final Duration WARMUP_DURATION = Duration.ofSeconds(10);
