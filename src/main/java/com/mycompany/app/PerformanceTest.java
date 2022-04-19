@@ -50,7 +50,7 @@ public class PerformanceTest {
      * RPS
      */
 
-    private static final int RPS_LOADER = 10000;
+    private static final int RPS_LOADER = 250;
     public static final int RPS_PROBE = 2;
 
 
