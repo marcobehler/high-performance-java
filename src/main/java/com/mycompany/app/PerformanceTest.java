@@ -51,11 +51,11 @@ public class PerformanceTest {
      */
 
     /** e.g. play with
-     * 1000  ( 250 x 4)
-     * 5000 ( 1250 x 4)
-     * 20000 (5000 x 4)
-     * 30000 (7500 x 4)
-     * 40000 (10000 x 4)
+     * 250  (x 4 = 1000)
+     * 1250 (x 4 = 5000)
+     * 5000 (x 4 = 20000)
+     * 7500 (x 4 = 30000)
+     * 10000(x 4 = 40000)
      */
 
     private static final int RPS_LOADER = 250;
