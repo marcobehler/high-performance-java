@@ -47,15 +47,23 @@ public class PerformanceTest {
 
 
     /**
+     * RPS
+     */
+
+    private static final int RPS_LOADER = 10000;
+    public static final int RPS_PROBE = 2;
+
+
+    /**
      * --------- IPS --------------
      */
 
-    public static final String SERVER_IP = "18.157.187.57";
+    public static final String SERVER_IP = "3.67.204.198";
 
-    public static final String PROBE_IP = "3.66.226.35";
+    public static final String PROBE_IP = "3.123.0.194";
 
 
-    public static List<String> LOADER_IPS = List.of("3.70.17.131", "18.195.129.81", "3.70.192.219", "3.68.70.218");
+    public static List<String> LOADER_IPS = List.of("3.70.172.123", "3.69.46.52", "18.157.184.15", "35.158.101.57");
 
 
     /**
@@ -71,8 +79,6 @@ public class PerformanceTest {
      * 40000 (10000 x 4)
      */
 
-    private static final int RPS_LOADER = 10000;
-    public static final int RPS_PROBE = 2;
 
     private static final Duration WARMUP_DURATION = Duration.ofSeconds(10);
     private static final Duration RUN_DURATION = Duration.ofSeconds(30);
