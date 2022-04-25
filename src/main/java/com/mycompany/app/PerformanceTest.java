@@ -58,7 +58,7 @@ public class PerformanceTest {
      * 10000(x 4 = 40000)
      */
 
-    private static final int RPS_LOADER = 250;
+    private static final int RPS_LOADER = 10000;
     public static final int RPS_PROBE = 2;
 
 
@@ -66,12 +66,12 @@ public class PerformanceTest {
      * --------- IPS --------------
      */
 
-    public static final String SERVER_IP = "3.67.204.198";
+    public static final String SERVER_IP = "3.69.255.159";
 
-    public static final String PROBE_IP = "3.123.0.194";
+    public static final String PROBE_IP = "3.120.228.199";
 
 
-    public static List<String> LOADER_IPS = List.of("3.70.172.123", "3.69.46.52", "18.157.184.15", "35.158.101.57");
+    public static List<String> LOADER_IPS = List.of("18.192.245.101", "3.68.107.213", "3.70.24.221", "3.73.63.239");
 
 
     /**
