@@ -29,6 +29,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -58,7 +62,7 @@ public class PerformanceTest {
      * 10000(x 4 = 40000)
      */
 
-    private static final int RPS_LOADER = 250;
+    private static final int RPS_LOADER = 2500;
     public static final int RPS_PROBE = 2;
 
 
@@ -66,27 +70,27 @@ public class PerformanceTest {
      * --------- IPS --------------
      */
 
-    public static final String SERVER_IP = "18.196.183.192";
+    public static final String SERVER_IP = "3.68.71.212";
 
-    public static final String PROBE_IP = "3.67.75.76";
+    public static final String PROBE_IP = "3.122.97.183";
 
 
-    public static List<String> LOADER_IPS = List.of("3.73.133.210", "3.69.51.247", "3.121.130.68", "3.73.51.129");
+    public static List<String> LOADER_IPS = List.of("18.185.2.251", "3.125.157.86", "3.67.75.104", "3.71.75.125");
 
 
     /**
      * --------- PARAMS --------------
      */
-    private static Mode mode = Mode.DEPLOY_JAVA;
+    private static Mode mode = Mode.MANUAL;
 
 
 
-    private static final Duration WARMUP_DURATION = Duration.ofSeconds(10);
-    private static final Duration RUN_DURATION = Duration.ofSeconds(30);
+    private static final Duration WARMUP_DURATION = Duration.ofSeconds(30);
+    private static final Duration RUN_DURATION = Duration.ofSeconds(60);
 
     public static final String BASE_FOLDER = ".\\target\\results";
 
-    public static final Resource REQUEST_URI = new Resource("/");
+    public static final Resource REQUEST_URI = new Resource("/tax-html-freemarker");
     public static final int PORT = 8080;
 
 
@@ -96,7 +100,7 @@ public class PerformanceTest {
 
     private static Logger LOGGER = LoggerFactory.getLogger(PerformanceTest.class);
 
-    
+
     private static final EnumSet<ConfigurableMonitor.Item> MONITORED_ITEMS = EnumSet.of(
             ConfigurableMonitor.Item.CMDLINE_CPU,
             ConfigurableMonitor.Item.CMDLINE_MEMORY,
@@ -243,20 +247,41 @@ public class PerformanceTest {
     }
 
     private static void recordServerMetrics(int participantCount, ClusterTools tools) throws Exception {
-        EnumSet<ConfigurableMonitor.Item> items = isDeploy() ? SERVER_ITEMS : MONITORED_ITEMS;
+        EnumSet<ConfigurableMonitor.Item> items = isAutoDeploy() ? SERVER_ITEMS : MONITORED_ITEMS;
+
+        HttpClient httpClient = HttpClient.newHttpClient();
+
 
         try (ConfigurableMonitor ignore = new ConfigurableMonitor(items)) {
             LatencyRecordingChannelListener listener = null;
-            if (isDeploy()) {
+            if (isAutoDeploy()) {
                 listener = (LatencyRecordingChannelListener) tools.nodeEnvironment().get(LatencyRecordingChannelListener.class.getName());
                 listener.startRecording();
+            } else {
+                HttpRequest request = HttpRequest.newBuilder()
+                        .POST(HttpRequest.BodyPublishers.noBody())
+                        .uri(URI.create("http://localhost:8080/performance-metrics/start?mode=cpu"))
+                        .setHeader("User-Agent", "Java 11 HttpClient Bot") // add request header
+                        .build();
+
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                // print status code
+                System.out.println("Starting metrics collection on server.  Response Code = " + response.statusCode() + " | Response: " + response.body());
             }
             tools.barrier("run-start-barrier", participantCount).await();
             tools.barrier("run-end-barrier", participantCount).await();
-            if (isDeploy()) {
-                if (listener != null) {
-                    listener.stopRecording();
-                }
+            if (isAutoDeploy()) {
+                listener.stopRecording();
+            } else {
+                HttpRequest request = HttpRequest.newBuilder()
+                        .POST(HttpRequest.BodyPublishers.noBody())
+                        .uri(URI.create("http://localhost:8080/performance-metrics/stop"))
+                        .setHeader("User-Agent", "Java 11 HttpClient Bot") // add request header
+                        .build();
+
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                // print status code
+                System.out.println("Stopping metrics collection on server. Response Code =  " + response.statusCode() + " | Response: " + response.body());
             }
         }
     }
@@ -276,7 +301,7 @@ public class PerformanceTest {
         }
     }
 
-    private static boolean isDeploy() {
+    private static boolean isAutoDeploy() {
         return mode == Mode.DEPLOY_DB | mode == Mode.DEPLOY_JAVA;
     }
 
@@ -284,9 +309,26 @@ public class PerformanceTest {
 
     private static void startServer(ConcurrentMap<String, Object> env) throws Exception {
         if (mode.equals(Mode.MANUAL)) {
-            return;
+            startPreDeployedServer(env);
         }
+        else {
+            autoDeployServer(env);
+        }
+    }
 
+
+
+    private static void startPreDeployedServer(ConcurrentMap<String, Object> env) {
+        try {
+        Process process = new ProcessBuilder("/usr/bin/java", "-jar", "/home/ubuntu/spring-performance-0.0.1-SNAPSHOT.jar", "&").start();
+      //      Process process = new ProcessBuilder("/usr/bin/java", "-jar", "/home/ubuntu/spring-petclinic-3.0.0-SNAPSHOT.jar", "&").start();
+            env.put(Process.class.getName(), process);
+        } catch (IOException e) {
+            System.err.println("Could not start process" +  e.getMessage());
+        }
+    }
+
+    private static void autoDeployServer(ConcurrentMap<String, Object> env) throws Exception {
         Server server1 = new Server();
 
         ServerConnector connector = new ServerConnector(server1);
@@ -325,9 +367,20 @@ public class PerformanceTest {
 
     private static void stopServer(Map<String, Object> env) throws Exception {
         if (mode.equals(Mode.MANUAL)) {
-            return;
+            stopPreDeployedServer(env);
         }
+        else {
+            stopAutoDeployedServer(env);
+        }
+    }
+
+    private static void stopAutoDeployedServer(Map<String, Object> env) throws Exception {
         ((Server) env.get(Server.class.getName())).stop();
+    }
+
+    private static void stopPreDeployedServer(Map<String, Object> env) {
+        Process process = (Process) env.get(Process.class.getName());
+        process.destroy();
     }
 
     public static void updatePlot(Path outputFolder) throws IOException {
@@ -431,7 +484,7 @@ public class PerformanceTest {
                 .threads(2)
                 .rateRampUpPeriod(WARMUP_DURATION.toSeconds() / 2)
                 .resourceRate(RPS_LOADER)
-                .resource(new Resource("/"))
+                .resource(REQUEST_URI)
                 .resourceListener(responseTimeListener)
                 .listener(responseTimeListener)
                 .resourceListener(responseStatusListener)

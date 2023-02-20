@@ -59,12 +59,12 @@
                 [{v:1,f:'0%'},
                     {v:10,f:'90%'},
                     {v:100,f:'99%'},
-                    {v:1000,f:'99.9%'},
+                    {v:1000,f:'99.9%'}/*,
                     {v:10000,f:'99.99%'},
                     {v:100000,f:'99.999%'},
                     {v:1000000,f:'99.9999%'},
                     {v:10000000,f:'99.99999%'},
-                    {v:100000000,f:'99.999999%'}];
+                    {v:100000000,f:'99.999999%'}*/];
 
             var unitSelection = document.getElementById("timeUnitSelection");
             var unitSelIndex = unitSelection.selectedIndex;
@@ -355,8 +355,8 @@
 Latency time units:
 <select name="units" size="1" id="timeUnitSelection" onChange="timeUnitsSelected()">
     <option value="Latency (seconds)">seconds</option>
-    <option selected value="Latency (milliseconds)">milliseconds</option>
-    <option value="Latency (µs)">microseconds</option>
+    <option value="Latency (milliseconds)">milliseconds</option>
+    <option selected value="Latency (µs)">microseconds</option>
     <option value="Latency (nanoseconds)">nanoseconds</option>
 </select>
 <button type='button' onclick='doExport(event)'>Export Image</button>
